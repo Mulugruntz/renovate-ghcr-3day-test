@@ -1,0 +1,6 @@
+# CASE 9 — ARG used for the REGISTRY portion of a FROM  (SUPPORTED)
+# Contrast with 8c: here the ARG is defined, so substitution completes and no
+# '$' remains => a normal ghcr.io dep that the 3-day rule must match.
+ARG REGISTRY=ghcr.io
+FROM ${REGISTRY}/astral-sh/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0
+RUN uv --version

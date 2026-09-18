@@ -1,0 +1,37 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "Europe/Amsterdam",
+
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Renovate Dashboard - ghcr.io 3-day hold test",
+
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 0,
+  "branchConcurrentLimit": 0,
+
+  "kubernetes": {
+    "managerFilePatterns": ["/^k8s/.+\\.ya?ml$/"]
+  },
+
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^versions\\.env$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: versioning=(?<versioning>\\S+))?\\s+UV_VERSION=(?<currentValue>\\S+)"
+      ],
+      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}"
+    }
+  ],
+
+  "packageRules": [
+    {
+      "description": "3-day cooldown on anything pulled from ghcr.io",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/**"],
+      "minimumReleaseAge": "3 days",
+      "internalChecksFilter": "strict"
+    }
+  ]
+}

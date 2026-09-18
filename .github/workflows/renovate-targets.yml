@@ -1,0 +1,16 @@
+# Manager: github-actions. job.container and job.services ARE extracted as
+# docker deps (github-actions/extract.ts reuses dockerfile getDep()).
+# workflow_dispatch only: this must never actually run in your repo.
+name: renovate-targets
+on:
+  workflow_dispatch:
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    container: ghcr.io/astral-sh/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0
+    services:
+      uv-sidecar:
+        image: ghcr.io/astral-sh/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0
+    steps:
+      - run: uv --version

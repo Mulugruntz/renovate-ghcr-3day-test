@@ -1,0 +1,17 @@
+# CASE 4 — RUN --mount=from=<image>  (SUPPORTED: extract.ts runMountFromRegex)
+# Verified valid. Regex: --mount=(?:\S*=\S*,)*from=(?<image>[^, ]+)
+# => 'from=' must be first, or preceded only by comma-separated key=value pairs.
+FROM debian:trixie-slim
+
+# 4a: from= first
+RUN --mount=from=ghcr.io/astral-sh/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0,source=/uv,target=/usr/local/bin/uv \
+    uv --version
+
+# 4b: from= after a key=value pair
+RUN --mount=type=bind,from=ghcr.io/astral-sh/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0,source=/uv,target=/usr/local/bin/uv \
+    uv --version
+
+# 4c: from= after TWO key=value pairs, combined with a cache mount
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,readonly,from=ghcr.io/astral-sh/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0,source=/uv,target=/usr/local/bin/uv \
+    uv --version

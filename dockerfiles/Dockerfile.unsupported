@@ -1,0 +1,22 @@
+# CASE 8 — KNOWN NEGATIVES. Nothing here should ever get a PR.
+# Included so you can prove the gap rather than wonder about it.
+ARG UV_BASE_IMAGE=ghcr.io/astral-sh/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0
+ARG REGISTRY=ghcr.io
+
+# 8a: bare ${VAR} in COPY --from. The COPY branch calls getDep() with the RAW
+#     string and does NO arg resolution => skipReason 'contains-variable'.
+FROM debian:trixie-slim
+COPY --from=${UV_BASE_IMAGE} /uv /usr/local/bin/uv-a
+
+# 8b: bare ${VAR} in RUN --mount=from. Same gap as 8a.
+RUN --mount=from=${UV_BASE_IMAGE},source=/uv,target=/tmp/uv /tmp/uv --version
+
+# 8c: undefined variable in FROM => no arg to resolve => 'contains-variable'.
+FROM $UNDEFINED_REGISTRY/astral-sh/uv:0.12.7-trixie-slim
+
+# 8d: digest-only, no tag. currentValue is undefined; there is no tag to follow.
+FROM ghcr.io/astral-sh/uv@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0
+
+# 8e: numeric stage index and 'scratch' are explicitly skipped.
+FROM scratch
+COPY --from=0 /uv /uv
