@@ -19,17 +19,30 @@
       "customType": "regex",
       "managerFilePatterns": ["/^versions\\.env$/"],
       "matchStrings": [
-        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: versioning=(?<versioning>\\S+))?\\s+UV_VERSION=(?<currentValue>\\S+)"
-      ],
-      "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}docker{{/if}}"
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+) versioning=(?<versioning>\\S+)\\s+\\w+=(?<currentValue>\\S+)"
+      ]
     }
   ],
 
   "packageRules": [
     {
-      "description": "3-day cooldown on anything pulled from ghcr.io",
+      "description": "LANE A - the requested 3-day cooldown on ghcr.io pulls. NOTE: ghcr.io exposes no release timestamps to the docker datasource, so with internalChecksFilter=strict these stay pending indefinitely rather than for 3 days. See README.",
       "matchDatasources": ["docker"],
       "matchPackageNames": ["ghcr.io/**"],
+      "minimumReleaseAge": "3 days",
+      "internalChecksFilter": "strict"
+    },
+    {
+      "description": "LANE C - same 3-day cooldown, but driven by a datasource that actually has timestamps. This one behaves as intended.",
+      "matchDatasources": ["github-releases", "github-tags"],
+      "matchPackageNames": ["astral-sh/uv"],
+      "minimumReleaseAge": "3 days",
+      "internalChecksFilter": "strict"
+    },
+    {
+      "description": "CONTROL - Docker Hub image. The docker datasource does report timestamps here (tag_last_pushed), so the cooldown is evaluated normally.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["alpine"],
       "minimumReleaseAge": "3 days",
       "internalChecksFilter": "strict"
     }

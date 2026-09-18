@@ -1,0 +1,13 @@
+# CONTROL GROUP — a Docker Hub image, deliberately very old (built 2023-12-08).
+#
+# The docker datasource only reports release timestamps for Docker Hub, via the
+# 'tag_last_pushed' field of Docker Hub's own tag API. So minimumReleaseAge
+# CAN be evaluated here, unlike for ghcr.io.
+#
+# Expect: a normal, NON-pending PR that opens straight away, because every
+# candidate alpine release is far older than 3 days.
+#
+# If this PR appears while the ghcr.io ones stay stuck on the dashboard, you
+# have proved the difference is the registry, not your config.
+FROM alpine:3.19.0@sha256:51b67269f354137895d43f3b3d810bfacd3945438e94dc5ac55fdac340352f48
+RUN echo control
