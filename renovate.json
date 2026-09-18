@@ -40,6 +40,20 @@
       "internalChecksFilter": "strict"
     },
     {
+      "description": "LANE X - the requested 3-day cooldown on DockerHub pulls.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["docker.io/**", "astral/uv"],
+      "minimumReleaseAge": "3 days",
+      "internalChecksFilter": "strict"
+    },
+    {
+      "description": "LANE Y - same 3-day cooldown, but driven by a datasource that actually has timestamps. This one behaves as intended.",
+      "matchDatasources": ["github-releases", "github-tags"],
+      "matchPackageNames": ["astral/uv"],
+      "minimumReleaseAge": "3 days",
+      "internalChecksFilter": "strict"
+    },
+    {
       "description": "CONTROL - Docker Hub image. The docker datasource does report timestamps here (tag_last_pushed), so the cooldown is evaluated normally.",
       "matchDatasources": ["docker"],
       "matchPackageNames": ["alpine"],
