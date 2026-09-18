@@ -2,41 +2,36 @@ name: Renovate (self-hosted A/B)
 
 # Proof of concept for the dockerMaxPages finding.
 #
-# Run it twice from the Actions tab and compare the logs:
+# Run twice from the Actions tab and compare:
+#   docker_max_pages = 0   -> option UNSET (Renovate default 20 pages). Docker Hub
+#                             403s at page 11 for astral/uv (5448 tags), Renovate
+#                             falls back to the timestamp-less registry API, every
+#                             release is "pending" => no Docker PRs.
+#   docker_max_pages = 10  -> stops at Docker Hub's anonymous 1000-item cap.
+#                             Timestamps arrive, the 3-day cooldown is evaluated,
+#                             astral/uv gets a real PR with tag AND digest bumped.
 #
-#   docker_max_pages = 0   -> leaves the option UNSET (Renovate default: 20 pages)
-#                             Docker Hub 403s on page 11 for astral/uv (5448 tags),
-#                             Renovate falls back to the timestamp-less registry API,
-#                             every release is "pending" => no Docker PRs.
-#
-#   docker_max_pages = 10  -> stops exactly at Docker Hub's anonymous 1000-item cap.
-#                             Timestamps arrive, the 3-day cooldown is evaluated
-#                             properly, and astral/uv gets a real PR with tag+digest.
-#
-# What to grep for in the job log:
-#   "error fetching data from DockerHub"     <- the 403 fallback (the bug)
-#   "Marking N release(s) as pending"        <- no timestamps were available
-#   "pendingChecks"                          <- update withheld
-#   "0.12.14-trixie-slim"                    <- the aged-out version being chosen (the fix)
+# Log strings worth grepping:
+#   "error fetching data from DockerHub"   <- the 403 fallback (the bug)
+#   "0.12.14-trixie-slim"                 <- aged-out version chosen (the fix)
+#   "Pull request creation error"         <- PR API refused
+#   "prBlockedBy"                         <- Renovate declined to open the PR
 
 on:
   workflow_dispatch:
     inputs:
       docker_max_pages:
-        description: 'dockerMaxPages. Use 10 for the fix, or 0 to leave it unset and reproduce the bug.'
+        description: 'dockerMaxPages. 10 = the fix; 0 = leave unset and reproduce the bug.'
         type: string
         default: '10'
       dry_run:
-        description: 'Dry run: read config and enumerate updates, create NO PRs.'
+        description: 'Dry run: enumerate updates, create NO branches or PRs.'
         type: boolean
-        default: true
+        default: false
 
-# Least privilege for a single-repo run. contents+pull-requests to push branches
-# and open PRs, issues for the Dependency Dashboard.
-permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+# Renovate uses the GitHub App token below, not GITHUB_TOKEN, so the job's own
+# token needs nothing. The App installation carries contents/PR/issues/workflows.
+permissions: {}
 
 concurrency:
   group: renovate-selfhosted
@@ -48,11 +43,11 @@ jobs:
     steps:
       # No checkout needed: Renovate clones the repo itself.
 
-      # Set RENOVATE_* vars via $GITHUB_ENV rather than the step's `env:` block.
-      # The action forwards anything matching its default env-regex
-      # ^(?:RENOVATE_\w+|LOG_LEVEL|GITHUB_COM_TOKEN|NODE_OPTIONS|NO_COLOR|...)$
-      # into the container, and an empty string is an INVALID value for several
-      # options -- so omit the variable entirely instead of blanking it.
+      # Set RENOVATE_* via $GITHUB_ENV rather than the step's `env:` block. The
+      # action forwards anything matching its default env-regex
+      #   ^(?:RENOVATE_\w+|LOG_LEVEL|GITHUB_COM_TOKEN|NODE_OPTIONS|NO_COLOR|...)$
+      # and an empty string is an INVALID value for several options, so omit the
+      # variable entirely instead of blanking it.
       - name: Configure dockerMaxPages
         if: ${{ inputs.docker_max_pages != '0' }}
         run: echo "RENOVATE_DOCKER_MAX_PAGES=${{ inputs.docker_max_pages }}" >> "$GITHUB_ENV"
@@ -74,7 +69,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
         env:
           LOG_LEVEL: debug
-          # Scope the run to this repo only; no autodiscover needed.
           RENOVATE_REPOSITORIES: ${{ github.repository }}
-          # RENOVATE_DOCKER_MAX_PAGES and RENOVATE_DRY_RUN are inherited from
-          # $GITHUB_ENV above, and only when actually set.
+          # Optional: lets Renovate read github.com releases/changelogs for repos
+          # the App is not installed on (e.g. astral-sh/uv for the LANE C lookup).
+          # GITHUB_COM_TOKEN: ${{ secrets.GH_COM_READ_TOKEN }}
