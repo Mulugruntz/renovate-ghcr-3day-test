@@ -12,19 +12,19 @@
 FROM debian:trixie-slim
 
 # 4a — DETECTED: from= is the first thing in the mount options
-RUN --mount=from=astral/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0,source=/uv,target=/usr/local/bin/uv \
+RUN --mount=from=astral/uv:0.12.14-trixie-slim@sha256:45d66bb5a1027a9026e35743755860fb888b4b0a19fb0ba3e31e31b094005afe,source=/uv,target=/usr/local/bin/uv \
     uv --version
 
 # 4b — DETECTED: from= after a key=value pair inside the SAME --mount
-RUN --mount=type=bind,from=astral/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0,source=/uv,target=/usr/local/bin/uv \
+RUN --mount=type=bind,from=astral/uv:0.12.14-trixie-slim@sha256:45d66bb5a1027a9026e35743755860fb888b4b0a19fb0ba3e31e31b094005afe,source=/uv,target=/usr/local/bin/uv \
     uv --version
 
 # 4c — DETECTED: bare flag (readonly) and later key=value are both fine
-RUN --mount=type=bind,readonly,from=astral/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0,source=/uv,target=/uv \
+RUN --mount=type=bind,readonly,from=astral/uv:0.12.14-trixie-slim@sha256:45d66bb5a1027a9026e35743755860fb888b4b0a19fb0ba3e31e31b094005afe,source=/uv,target=/uv \
     uv --version
 
 # 4d — DETECTED: a non-mount flag with a single '=' is consumable
-RUN --network=none --mount=type=bind,from=astral/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0,source=/uv,target=/uv \
+RUN --network=none --mount=type=bind,from=astral/uv:0.12.14-trixie-slim@sha256:45d66bb5a1027a9026e35743755860fb888b4b0a19fb0ba3e31e31b094005afe,source=/uv,target=/uv \
     uv --version
 
 # 4e — *** NOT DETECTED *** — this is the trap.
@@ -36,6 +36,6 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv --version
 
 # 4f — DETECTED: same two mounts as 4e, order swapped. This is the workaround.
-RUN --mount=type=bind,from=astral/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0,source=/uv,target=/usr/local/bin/uv \
+RUN --mount=type=bind,from=astral/uv:0.12.14-trixie-slim@sha256:45d66bb5a1027a9026e35743755860fb888b4b0a19fb0ba3e31e31b094005afe,source=/uv,target=/usr/local/bin/uv \
     --mount=type=cache,target=/root/.cache/uv \
     uv --version

@@ -1,4 +1,4 @@
 # CASE 1 — plain FROM  (SUPPORTED: extract.ts fromRegex)
 # Expect: version PR (tag + digest rewritten together) + digest-only PRs.
-FROM astral/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0
+FROM astral/uv:0.12.14-trixie-slim@sha256:45d66bb5a1027a9026e35743755860fb888b4b0a19fb0ba3e31e31b094005afe
 RUN uv --version

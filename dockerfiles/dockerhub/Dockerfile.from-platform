@@ -1,6 +1,6 @@
 # CASE 2 — FROM with --platform flag  (SUPPORTED: fromRegex consumes '--platform=\S+')
 # Expect: same as case 1. The BUILDPLATFORM variable must NOT confuse the extractor.
-FROM --platform=$BUILDPLATFORM astral/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0 AS uvsrc
+FROM --platform=$BUILDPLATFORM astral/uv:0.12.14-trixie-slim@sha256:45d66bb5a1027a9026e35743755860fb888b4b0a19fb0ba3e31e31b094005afe AS uvsrc
 RUN uv --version
 
 # CASE 2b — stage alias reference, NOT an image (SUPPORTED as a skip)
