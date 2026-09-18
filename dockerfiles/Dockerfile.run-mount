@@ -1,17 +1,41 @@
-# CASE 4 — RUN --mount=from=<image>  (SUPPORTED: extract.ts runMountFromRegex)
-# Verified valid. Regex: --mount=(?:\S*=\S*,)*from=(?<image>[^, ]+)
-# => 'from=' must be first, or preceded only by comma-separated key=value pairs.
+# CASE 4 — RUN --mount=from=<image>   (SUPPORTED, with one sharp edge)
+#
+# extract.ts runMountFromRegex:
+#   ^RUN(?:<esc-nl>| |\t|#.*\n|--[a-z]+(?:=[a-zA-Z0-9_.:-]+?)?)+--mount=(?:\S*=\S*,)*from=(?<image>[^, ]+)
+#
+# The pre-flag alternation excludes '=' from a flag's value, so a PRECEDING
+# '--mount=type=...' can never be consumed. Net rule, verified by running
+# Renovate 44.95.0 against each variant:
+#
+#   the from= mount must be the FIRST --mount= flag on the RUN instruction.
+#
 FROM debian:trixie-slim
 
-# 4a: from= first
+# 4a — DETECTED: from= is the first thing in the mount options
 RUN --mount=from=ghcr.io/astral-sh/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0,source=/uv,target=/usr/local/bin/uv \
     uv --version
 
-# 4b: from= after a key=value pair
+# 4b — DETECTED: from= after a key=value pair inside the SAME --mount
 RUN --mount=type=bind,from=ghcr.io/astral-sh/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0,source=/uv,target=/usr/local/bin/uv \
     uv --version
 
-# 4c: from= after TWO key=value pairs, combined with a cache mount
+# 4c — DETECTED: bare flag (readonly) and later key=value are both fine
+RUN --mount=type=bind,readonly,from=ghcr.io/astral-sh/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0,source=/uv,target=/uv \
+    uv --version
+
+# 4d — DETECTED: a non-mount flag with a single '=' is consumable
+RUN --network=none --mount=type=bind,from=ghcr.io/astral-sh/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0,source=/uv,target=/uv \
+    uv --version
+
+# 4e — *** NOT DETECTED *** — this is the trap.
+# A separate --mount=type=cache BEFORE the from= mount kills extraction.
+# This is exactly the pattern the uv docs suggest for caching, so it is very
+# easy to end up with an image that Renovate silently never bumps.
 RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,readonly,from=ghcr.io/astral-sh/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0,source=/uv,target=/usr/local/bin/uv \
+    --mount=type=bind,from=ghcr.io/astral-sh/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0,source=/uv,target=/usr/local/bin/uv \
+    uv --version
+
+# 4f — DETECTED: same two mounts as 4e, order swapped. This is the workaround.
+RUN --mount=type=bind,from=ghcr.io/astral-sh/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0,source=/uv,target=/usr/local/bin/uv \
+    --mount=type=cache,target=/root/.cache/uv \
     uv --version
