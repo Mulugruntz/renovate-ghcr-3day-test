@@ -1,9 +1,9 @@
 # CASE 7 — ${VAR:-default} inline default  (SUPPORTED: splitImageParts defaultValueRegex)
 # Handled inside splitImageParts, so it works for FROM, COPY --from AND RUN --mount.
 ARG UV_IMAGE
-FROM ${UV_IMAGE:-astral/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0} AS uvstage
+FROM ${UV_IMAGE:-astral/uv:0.12.14-trixie-slim@sha256:45d66bb5a1027a9026e35743755860fb888b4b0a19fb0ba3e31e31b094005afe} AS uvstage
 RUN uv --version
 
 FROM debian:trixie-slim
-COPY --from=${UV_IMAGE:-astral/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0} /uv /usr/local/bin/uv
-RUN --mount=from=${UV_IMAGE:-astral/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0},source=/uv,target=/tmp/uv /tmp/uv --version
+COPY --from=${UV_IMAGE:-astral/uv:0.12.14-trixie-slim@sha256:45d66bb5a1027a9026e35743755860fb888b4b0a19fb0ba3e31e31b094005afe} /uv /usr/local/bin/uv
+RUN --mount=from=${UV_IMAGE:-astral/uv:0.12.14-trixie-slim@sha256:45d66bb5a1027a9026e35743755860fb888b4b0a19fb0ba3e31e31b094005afe},source=/uv,target=/tmp/uv /tmp/uv --version
