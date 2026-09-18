@@ -1,9 +1,9 @@
 # CASE 3 — COPY --from=<image>  (SUPPORTED: extract.ts copyFromRegex)
 # This is the pattern the uv docs recommend. Expect version + digest PRs.
 FROM debian:trixie-slim
-COPY --from=astral-sh/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0 /uv /uvx /usr/local/bin/
+COPY --from=astral/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0 /uv /uvx /usr/local/bin/
 
 # CASE 3b — extra flags before --from (SUPPORTED: regex allows '--[a-z]+(=...)?' repeats)
-COPY --link --from=astral-sh/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0 /uv /usr/local/bin/uv-copy2
+COPY --link --from=astral/uv:0.12.7-trixie-slim@sha256:92d38da241c7962f8f863e288cc1c39795b79b6553245f623a82db6be95bdae0 /uv /usr/local/bin/uv-copy2
 
 RUN uv --version
