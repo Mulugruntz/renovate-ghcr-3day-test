@@ -1,0 +1,10 @@
+# CASE 6 — ARG holding only the VERSION, interpolated into the tag  (PARTIAL SUPPORT)
+# extract.ts substitutes the ARG, so the dep IS detected as
+#   astral-sh/uv @ currentValue=0.12.7-trixie-slim
+# BUT the resolved string never appears literally in the file, and the ARG line
+# contains '0.12.7' not '0.12.7-trixie-slim', so auto-replace has nothing to
+# anchor on. THIS IS THE CASE TO WATCH: detected on the dashboard, yet the file
+# rewrite may fail or be skipped. No digest here, so also no digest pinning.
+ARG UV_VERSION=0.12.7
+FROM astral-sh/uv:${UV_VERSION}-trixie-slim
+RUN uv --version

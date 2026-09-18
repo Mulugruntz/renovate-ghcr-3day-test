@@ -166,6 +166,7 @@ the rule — otherwise it covers compose, k8s, devcontainer and Actions too.
 ## How to run it
 
 ```bash
+git init && git add -A && git commit -m "renovate ghcr 3-day hold test"
 gh repo create renovate-ghcr-3day-test --private --source=. --push
 ```
 
@@ -179,11 +180,25 @@ LOG_LEVEL=debug npx --package=renovate renovate --platform=local --dry-run=looku
 or PRs, which is enough to see every finding above. `--dry-run=extract` is faster
 if you only care about the syntax matrix.
 
+Running locally, LANE C in `versions.env` is skipped with
+`skipReason: github-token-required` — Renovate refuses the GitHub datasources
+without a token. Export one to exercise it:
+
+```bash
+GITHUB_COM_TOKEN=$(gh auth token) LOG_LEVEL=debug npx --package=renovate renovate --platform=local --dry-run=lookup
+```
+
+On a repo running the Renovate GitHub App a token is always present, so LANE C
+needs no extra setup there.
+
 ### What to expect
 
 - **The alpine control PR opens immediately.** Docker Hub supplies timestamps and
   every alpine release is years old. Its presence alongside stuck ghcr entries is
-  the proof that the registry, not your config, is the variable.
+  the proof that the registry, not your config, is the variable. Verified on
+  2026-09-18: `alpine 3.19.0 -> 3.24.1`, `pendingChecks` unset, while
+  `ghcr.io/astral-sh/uv 0.12.7-trixie-slim -> 0.12.16-trixie-slim` came back
+  `pendingChecks: true` under the identical 3-day rule.
 - **Every ghcr.io entry sits on the dashboard under "Pending Status Checks"** and
   never becomes a PR.
 - **All 20-odd ghcr occurrences collapse into 2 branches**, since they are all the
